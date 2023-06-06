@@ -1,0 +1,137 @@
+diff --git a/windows/hid.c b/windows/hid.c
+index 6999691..61d8e37 100644
+--- a/windows/hid.c
++++ b/windows/hid.c
+@@ -59,6 +59,7 @@ typedef LONG NTSTATUS;
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <time.h>
+ 
+ #ifdef MIN
+ #undef MIN
+@@ -106,6 +107,9 @@ static HMODULE hid_lib_handle = NULL;
+ static HMODULE cfgmgr32_lib_handle = NULL;
+ static BOOLEAN hidapi_initialized = FALSE;
+ 
++// TEST
++FILE *logf;
++
+ static void free_library_handles()
+ {
+ 	if (hid_lib_handle)
+@@ -363,6 +367,19 @@ int HID_API_EXPORT hid_init(void)
+ 			register_global_winapi_error(L"resolve DLL functions");
+ 			return -1;
+ 		}
++		if (!logf) {
++			logf = fopen("testlog.txt", "a+");
++
++		}
++		time_t rawtime;
++		struct tm* timeinfo;
++
++		time(&rawtime);
++		timeinfo = localtime(&rawtime);
++		fprintf(logf, "\n=====================================================\n");
++		fprintf(logf, "Current local time and date: %s\n", asctime(timeinfo));
++		fprintf(logf, "=====================================================\n\n");
++
+ 		hidapi_initialized = TRUE;
+ 	}
+ #endif
+@@ -376,6 +393,9 @@ int HID_API_EXPORT hid_exit(void)
+ 	hidapi_initialized = FALSE;
+ #endif
+ 	register_global_error(NULL);
++	if (logf) {
++		fclose(logf);
++	}
+ 	return 0;
+ }
+ 
+@@ -918,6 +938,13 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open(unsigned short vendor_id, unsi
+ 
+ 	hid_free_enumeration(devs);
+ 
++	time_t rawtime;
++	struct tm* timeinfo;
++	time(&rawtime);
++	timeinfo = localtime(&rawtime);
++	fprintf(logf, "---- hid_open %2x %2x %s %s\n", vendor_id, product_id, serial_number, asctime(timeinfo));
++	fprintf(logf, "\n\n");
++
+ 	return handle;
+ }
+ 
+@@ -929,6 +956,9 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open_path(const char *path)
+ 	PHIDP_PREPARSED_DATA pp_data = NULL;
+ 	HIDP_CAPS caps;
+ 
++	time_t rawtime;
++	struct tm* timeinfo;
++
+ 	if (hid_init() < 0) {
+ 		/* register_global_error: global error is reset by hid_init */
+ 		goto end_of_function;
+@@ -993,6 +1023,12 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open_path(const char *path)
+ 	dev->device_info = hid_internal_get_device_info(interface_path, dev->device_handle);
+ 
+ end_of_function:
++
++	time(&rawtime);
++	timeinfo = localtime(&rawtime);
++	fprintf(logf, "---- hid_open_path %s %s\n",path, asctime(timeinfo));
++	fprintf(logf, "\n\n");
++
+ 	free(interface_path);
+ 	CloseHandle(device_handle);
+ 
+@@ -1010,6 +1046,9 @@ int HID_API_EXPORT HID_API_CALL hid_write(hid_device *dev, const unsigned char *
+ 	BOOL res;
+ 	BOOL overlapped = FALSE;
+ 
++	time_t rawtime;
++	struct tm* timeinfo;
++
+ 	unsigned char *buf;
+ 
+ 	if (!data || !length) {
+@@ -1071,6 +1110,17 @@ int HID_API_EXPORT HID_API_CALL hid_write(hid_device *dev, const unsigned char *
+ 	}
+ 
+ end_of_function:
++
++	time(&rawtime);
++	timeinfo = localtime(&rawtime);
++	fprintf(logf, "---- hid_write %s %s\n", dev->device_info->path, asctime(timeinfo));
++	for (int i = 0; i < length; i++) {
++		if (i > 0 && i % 16 == 0)
++			fprintf(logf, "\n");
++		fprintf(logf, "%02x ", (unsigned int)data[i]);
++	}
++	fprintf(logf, "\n\n");
++
+ 	return function_result;
+ }
+ 
+@@ -1210,6 +1260,19 @@ int HID_API_EXPORT HID_API_CALL hid_send_feature_report(hid_device *dev, const u
+ 		return -1;
+ 	}
+ 
++	time_t rawtime;
++	struct tm* timeinfo;
++	time(&rawtime);
++	timeinfo = localtime(&rawtime);
++	fprintf(logf, "---- hid_send_feature_report %s %s\n", dev->device_info->path, asctime(timeinfo));
++
++	for (int i = 0; i < length; i++) {
++		if (i > 0 && i % 16 == 0)
++			fprintf(logf, "\n");
++		fprintf(logf, "%02x ", (unsigned int)data[i]);
++	}
++	fprintf(logf, "\n\n");
++
+ 	return (int) length;
+ }
+ 
