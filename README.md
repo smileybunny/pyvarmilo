@@ -1,6 +1,8 @@
 # pyvarmilo
 
-**pyvarmilo** is a python library to configure Varmilo keyboards. It uses the [hidapi python library](https://pypi.org/project/hidapi/). See the [hidapi C library](https://github.com/libusb/hidapi), too.
+English | [简体中文](README_CN.md)
+
+**pyvarmilo** is a python library to configure Varmilo keyboards. It sends commands to the keyboard using the [hidapi python library](https://pypi.org/project/hidapi/). See the [hidapi C library](https://github.com/libusb/hidapi) for API specs.
 
 # Requirements
 Run this first:
@@ -42,21 +44,27 @@ python main.py -v -m vdg87ttj -k 1:0=LEFTALT,2:0=LEFTMETA,9:0=RIGHTMETA,10:0=RIG
 
 # How to contribute
 
-* Implement modifier support
+* Add modifier support
+* Add LED lighting support
 * Search for `FIXME` and work on these
 * Feel free to send pull requests
 
 # Development
 
+## Before you begin
+
+* Download the user manual for your specific keyboard model.
+* Find the instructions for restoring the factory settings, usually by long-pressing `Fn+D`.
+
 ## Is my keyboard supported?
 
 * Download Varmilo Keyboard [programming firmware](https://cn.varmilo.com/keyboardproscenium/upload/Varmilo-Keyboard.rar) (VDG104/87自定义键值、灯效软件)
 * Install and open `Varmilo-Keyboard.exe`. If it shows a green light icon and "ON" at the bottom right of the window, then your keyboard is supported.
-* If your keyboard is not supported, you can still send data to it at your own risk. Because you may **brick** it.
+* If your keyboard is not supported, you can still use this program to send data to it at your own risk. Note that you may **brick** it.
 
 ## Capture HID data for your keyboard
 
-I suspect that the key mapping are the same across all keyboard models, if the firmware comes with the remapping functionality. But I still recommend you to capture the HID data.
+I suspect that the key mapping data is the same across all keyboard models, if the firmware comes with the remapping functionality. But I still recommend you to capture the HID data.
 
 1. Install Visual Studio and Windows SDK
 2. Checkout the [hidapi C library](https://github.com/libusb/hidapi)
@@ -64,8 +72,8 @@ I suspect that the key mapping are the same across all keyboard models, if the f
 4. Open `windows\hidapi.sln` and build
 5. Copy the `windows\Debug\hdiapi.dll` to `C:\Program Files (x86)\VarmiloKeyboard\`
 6. Open `Varmilo-Keyboard.exe`, then click on "KEY" -> check "GAMING MODE".
-7. Click on a key and map it to something else, click on the "tick" to confirm. Now the software should send data to your keyboard using `hidapi.dll`.
-8. Then restore the default by clicking the "refresh" button right next to the "tick" and then click tick. The software does not work well, but it does not matter.
+7. Click on a key and map it to something else, click on the "√" to confirm. Now the software should send data to your keyboard using `hidapi.dll`.
+8. Then restore the default by clicking the "refresh" button right next to the "tick" and then click tick. The software does not work well, but it does not matter because what we want is the data it sends.
 9. Quit the software by clicking on the top right corner button
 10. Open `testlog.txt` and find the feature report data and key mapping data the software sends
 
